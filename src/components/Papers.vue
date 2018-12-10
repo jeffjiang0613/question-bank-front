@@ -1,17 +1,24 @@
 <template>
-    <el-table :data="questions">
-        <el-table-column label="题号" prop="id" width="60">
-        </el-table-column>
-        <el-table-column label="内容" prop="content">
-        </el-table-column>
-        <el-table-column label="操作" width="100">
-            <template slot-scope="{scope}">
-                <span>{{scope}}</span>
-                <el-button size="mini" type="primary" icon="el-icon-edit" circle @click="handleEdit(scope)"></el-button>
-                <el-button size="mini" type="danger" icon="el-icon-delete" circle @click="handleEdit(scope)"></el-button>
-            </template>
-        </el-table-column>
-    </el-table>
+    <div>
+        <el-card class="box-card" v-for="question in questions">
+            <div class="title">
+                {{question.id}}
+            </div>
+            <hr class="splitline"/>
+            <div class="question">
+                {{question.question}}
+            </div>
+            <hr class="splitline"/>
+            <div class="answer">
+                {{question.answer}}
+            </div>
+            <hr class="splitline"/>
+            <div class="operateBar">
+                <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="handleEdit(question.id)"></el-button>
+                <el-button type="danger" icon="el-icon-delete" size="mini"  circle @click="handleDelete(question.id)"></el-button>
+            </div>
+        </el-card>
+    </div>
 </template>
 <script>
     export default {
@@ -21,24 +28,32 @@
                 questions:[
                     {
                         id: 9999,
-                        content: 'sasaa'
+                        question: 'saaaaaaaaaaaaaaaaaaaa',
+                        answer: 'ewefwwefw'
                     },
                     {
                         id: 9998,
-                        content: '你好飒飒'
+                        question: 'efweeeeeeeeeeeeeeee',
+                        answer: 'sasaa'
                     }
 
                 ]
             }
         },
         methods: {
-            handleEdit (scope) {
-                alert(scope.index)
+            handleEdit (id) {
+                alert(id)
+            },
+            handleDelete(id) {
+                alert(id)
             }
         }
     }
 </script>
 
 <style scoped>
+    .splitline {
+
+    }
 
 </style>

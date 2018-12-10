@@ -61,7 +61,7 @@
                     initialFrameHeight: '320',
                     // initialFrameWidth: '100%',
                     // autoHeight: true,
-                    serverUrl: 'http://35.201.165.105:8000/controller.php',
+                    serverUrl: 'http://localhost:8081/v1/ueditors',
                     UEDITOR_HOME_URL: '/UEditor/',
                     toolbars: [[
                         'source','bold', 'italic', 'underline', 'strikethrough',
