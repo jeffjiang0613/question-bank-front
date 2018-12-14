@@ -2,20 +2,24 @@
     <div>
         <el-container>
             <el-header>
-                <div class="submitBox" @click="submit">
-                    <el-select v-model="currentQuestion.currentBank">
+                <div class="submitBox">
+                    <el-select v-model="currentQuestion.bank_id" @change="changeBank">
                         <el-option v-for="bank in banks" :label="bank.name" :key="bank.id" :value="bank.id" :title="bank.coment">
 
                         </el-option>
                     </el-select>
-                    <el-select v-model="currentQuestion.currentType">
-                        <el-option v-for="t in types" :label="t.name" :key="t.id" :value="t.id" :title="t.name"></el-option>
+                    <el-select v-model="currentQuestion.type_id">
+                        <el-option v-for="t in questionTypes" :label="t.name" :key="t.id" :value="t.id" :title="t.name"></el-option>
                     </el-select>
-                    <el-button>提交</el-button>
+                    <el-button @click="submit">{{editMode?"保存":"新增"}}</el-button>
+                    <el-button @click="cancel" v-if="editMode">取消</el-button>
                     <div class="links">
                         <router-link to="/banks/new">题库</router-link>
                         <div></div>
-                        <router-link to="/papers/new">出卷</router-link>
+                        <el-dialog :visible.sync="gernerateMode">
+                            <Papers></Papers>
+                        </el-dialog>
+                        <el-button @click="gernerateMode = true">出卷</el-button>
                     </div>
                 </div>
             </el-header>
@@ -39,7 +43,7 @@
                         <!--<div v-html="q.answer"></div>-->
                     <!--</div>-->
 
-                    <Questions ref="myQuestions" v-on:changeCurrentQuestion="changeCurrentQuestion"></Questions>
+                    <Questions ref="myQuestions" @changeCurrentQuestion="changeCurrentQuestion"></Questions>
                 </div>
             </el-main>
         </el-container>
@@ -49,20 +53,23 @@
 <script>
     import VueUeditorWrap from "vue-ueditor-wrap";
     import Questions from "@/components/Questions";
+    import Papers from "../../components/Papers";
     export default {
         name: "NewQuestion",
-        components: {Questions, VueUeditorWrap},
+        components: {Papers, Questions, VueUeditorWrap},
         data () {
             return {
+                gernerateMode: false,
                 questions: [],
                 currentQuestion: {
-                  question: '',
-                  answer: '',
-                    currentBank: '',
-                    currentType: ''
+                    question: '',
+                    answer: '',
+                    bank_id: '',
+                    type_id: ''
                 },
                 banks: [],
-                types: [],
+                questionTypes: [],
+                editMode: false,
                 questionConfig: {
                     autoHeightEnabled: false,
                     initialFrameHeight: '320',
@@ -80,62 +87,52 @@
             }
         },
         methods: {
+            clear () {
+                this.currentQuestion.question = ''
+                this.currentQuestion.answer = ''
+                this.currentQuestion.id = undefined
+            },
+            changeBank () {
+                this.getQuestionTypes(this.currentQuestion.bank_id)
+            },
             changeCurrentQuestion (res) {
-                this.currentQuestion = res
+                window.console.log(res)
+                this.editMode = true
+                this.currentQuestion = {...res}
+                this.getQuestionTypes(res.bank_id)
             },
             submit () {
                 if(this.currentQuestion.id == undefined) {
-                    this.axios.post('/v1/questions',this.currentQuestion).then(response => {
-                        this.$message(response.data.data)
-                    })
+                    this.axios.post('/v1/questions',{...this.currentQuestion}).then(response => {
+                        this.$message.success(response.data.data)
+                        this.$refs.myQuestions.getFirstPageQuestions()
+                    }).catch(response => this.$message.error(response.data.message))
                 } else {
-                    this.axios.patch('/v1/questions',this.currentQuestion).then(response => {
-                        this.$message(response.data.data)
-                    })
+                    this.axios.patch('/v1/questions',{...this.currentQuestion}).then(response => {
+                        this.$message.success(response.data.data)
+                        this.$refs.myQuestions.getFirstPageQuestions()
+                    }).catch(response => this.$message.error(response.data.message))
                 }
-                this.$refs.myQuestions.getQuestions()
-                this.currentQuestion = {}
+                this.clear()
+                this.editMode = false
             },
-            getTypes () {
-                this.types = [
-                    {
-                        id: 1,
-                        name: '单选题'
-                    },
-                    {
-                        id: 2,
-                        name: '多选题'
-                    }
-                    ]
+            cancel () {
+                this.editMode = false
+                this.clear()
             },
             getBanks () {
-                this.banks = [
-                    {
-                        id: '1',
-                        name: '初中数学',
-                        coment: '这是一套初中数学卷子'
-                    },
-                    {
-                        id: '2',
-                        name: '初中语文',
-                        coment: '这是一套初中语文卷子'
-                    }
-                ]
+                this.axios.get('/v1/banks').then(response => this.banks = response.data.data)
+            },
+            getQuestionTypes (bank_id) {
+                this.axios.get('/v1/question_types/'+bank_id).then(response => this.questionTypes = response.data.data)
             }
         },
         mounted () {
-            this.getBanks();
-            this.getTypes();
+            this.getBanks()
+            this.getQuestionTypes()
             this.$on('changeCurrentQuestion',question => {
                 this.currentQuestion = question
             })
-            // this.axios.get('/v1/questions').then(response => {
-            //     this.questions = response.data
-            // }).catch(response => {
-            //     response
-            // })
-            // this.currentBank = this.banks[0];
-            // this.currentType = this.types[0];
         }
     }
 </script>
